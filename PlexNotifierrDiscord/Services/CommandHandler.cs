@@ -1,5 +1,6 @@
 using Discord.Commands;
 using Discord.WebSocket;
+using Serilog;
 using System.Reflection;
 
 namespace PlexNotifierrDiscord.Services
@@ -34,7 +35,7 @@ namespace PlexNotifierrDiscord.Services
                     await context.Channel.SendMessageAsync($"error: {result}");
             };
 
-            foreach (var module in _commands.Modules) Console.WriteLine($"Module '{module.Name}' initialized.");
+            foreach (var module in _commands.Modules) Log.Information($"Module '{module.Name}' initialized");
         }
 
         private async Task HandleCommandAsync(SocketMessage arg)

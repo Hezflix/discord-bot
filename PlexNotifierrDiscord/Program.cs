@@ -3,7 +3,12 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PlexNotifierrDiscord.Services;
+using Serilog;
+
+
+Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().Enrich.FromLogContext().WriteTo.Console().CreateLogger();
 
 var services = new ServiceCollection();
 var config = new ConfigurationBuilder()
@@ -35,13 +40,14 @@ async Task MainAsync()
     var service = services.BuildServiceProvider();
     await service.GetRequiredService<ICommandHandler>().InitializeAsync();
 
-    client.ShardReady += async shard => { Console.WriteLine($"Shard Number {shard.ShardId} is connected and ready!"); };
+    client.Log += PlexNotifierrDiscord.Extensions.LoggerExtensions.LogAsync;
+    client.ShardReady += async shard => { Log.Information($"Shard Number {shard.ShardId} is connected and ready!"); };
 
     // Login and connect.
     var token = config.GetRequiredSection("Discord")["DiscordBotToken"];
     if (string.IsNullOrWhiteSpace(token))
     {
-        Console.WriteLine($"Token is null or empty.");
+        Log.Error("Token is null or empty");
         return;
     }
 
