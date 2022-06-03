@@ -3,19 +3,21 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
+using PlexNotifierrDiscord.Models;
 using PlexNotifierrDiscord.Services;
 using Serilog;
-
+using System.Reflection;
+using LoggerExtensions = PlexNotifierrDiscord.Extensions.LoggerExtensions;
 
 Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().Enrich.FromLogContext().WriteTo.Console().CreateLogger();
 
-var services = new ServiceCollection();
-var config = new ConfigurationBuilder()
-            .AddJsonFile($"appsettings.json")
-            .Build();
-var client = new DiscordShardedClient();
-
+var client = new DiscordShardedClient(new DiscordSocketConfig
+{
+    LogLevel = LogSeverity.Info,
+    AlwaysDownloadUsers = true,
+    MessageCacheSize = 1000
+});
 
 var commands = new CommandService(new CommandServiceConfig
 {
@@ -27,33 +29,34 @@ var commands = new CommandService(new CommandServiceConfig
     CaseSensitiveCommands = false
 });
 
-// Setup your DI container.
-services.AddSingleton(client)
-        .AddSingleton(commands)
-        .AddSingleton(config)
-        .AddSingleton<ICommandHandler, CommandHandler>();
+var host = Host.CreateDefaultBuilder()
+               .UseContentRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+               .ConfigureServices((hostContext, services) =>
+                {
+                    var config = hostContext.Configuration;
+                    // Setup your DI container.
+                    services.AddHostedService<MessageReceiver>();
+                    services.AddSingleton(client);
+                    services.AddSingleton(commands);
+                    services.AddSingleton(config);
+                    services.AddSingleton<ICommandHandler, CommandHandler>();
+                    services.AddOptions<RabbitMqConfig>().Bind(hostContext.Configuration.GetSection("RabbitMQ"));
+                })
+               .Build();
 
-await MainAsync();
+await host.Services.GetRequiredService<ICommandHandler>().InitializeAsync();
 
-async Task MainAsync()
+client.Log += LoggerExtensions.LogAsync;
+client.ShardReady += async shard => { Log.Information($"Shard Number {shard.ShardId} is connected and ready!"); };
+var config = host.Services.GetRequiredService<IConfiguration>();
+// Login and connect.
+var token = config.GetRequiredSection("Discord")["DiscordBotToken"];
+if (string.IsNullOrWhiteSpace(token))
 {
-    var service = services.BuildServiceProvider();
-    await service.GetRequiredService<ICommandHandler>().InitializeAsync();
-
-    client.Log += PlexNotifierrDiscord.Extensions.LoggerExtensions.LogAsync;
-    client.ShardReady += async shard => { Log.Information($"Shard Number {shard.ShardId} is connected and ready!"); };
-
-    // Login and connect.
-    var token = config.GetRequiredSection("Discord")["DiscordBotToken"];
-    if (string.IsNullOrWhiteSpace(token))
-    {
-        Log.Error("Token is null or empty");
-        return;
-    }
-
-    await client.LoginAsync(TokenType.Bot, token);
-    await client.StartAsync();
-
-    // Wait infinitely so your bot actually stays connected.
-    await Task.Delay(Timeout.Infinite);
+    Log.Error("Token is null or empty");
+    return;
 }
+
+await client.LoginAsync(TokenType.Bot, token);
+await client.StartAsync();
+await host.RunAsync();
