@@ -19,6 +19,7 @@ namespace PlexNotifierrDiscord.Extensions
                 _ => LogEventLevel.Information
             };
             Log.Write(severity, message.Exception, "[{Source}] {Message}", message.Source, message.Message);
+            await Task.CompletedTask;
         }
     }
 }
