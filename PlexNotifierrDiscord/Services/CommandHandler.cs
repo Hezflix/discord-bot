@@ -1,3 +1,4 @@
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Serilog;
@@ -27,17 +28,17 @@ namespace PlexNotifierrDiscord.Services
 
             // Subscribe a handler to see if a message invokes a command.
             _client.MessageReceived += HandleCommandAsync;
-
-            _commands.CommandExecuted += async (optional, context, result) =>
-            {
-                if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
-                    // the command failed, let's notify the user that something happened.
-                    await context.Channel.SendMessageAsync($"error: {result}");
-            };
-
-            foreach (var module in _commands.Modules) Log.Information($"Module '{module.Name}' initialized");
+            
+            _client.ShardReady += Ready;
+            //await _client.SetActivityAsync(IActivity);
+            foreach (var module in _commands.Modules) Log.Information("Module \'{ModuleName}\' initialized", module.Name);
         }
 
+        private async Task Ready(DiscordSocketClient discordSocketClient)
+        {
+            await discordSocketClient.SetGameAsync("!help", type: ActivityType.Listening);
+        }
+        
         private async Task HandleCommandAsync(SocketMessage arg)
         {
             // Bail out if it's a System Message.

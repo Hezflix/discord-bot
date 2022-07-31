@@ -88,7 +88,7 @@ namespace PlexNotifierrDiscord.Services
             try
             {
                 var user = await _client.Rest.GetUserAsync(Convert.ToUInt64(plexNotification.DiscordId));
-                await user.SendMessageAsync($"Nouvel épisode de la série {plexNotification.Title} disponible !");
+                await user.SendMessageAsync($"📺 {plexNotification.Title} - Saison {plexNotification.Season} : Episode {plexNotification.Episode} - {plexNotification.EpisodeTitle} 👈 vient d'être ajouté à Plex !");
             }
             catch (Exception e)
             {
