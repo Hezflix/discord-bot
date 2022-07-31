@@ -40,7 +40,9 @@ var host = Host.CreateDefaultBuilder()
                     services.AddSingleton(commands);
                     services.AddSingleton(config);
                     services.AddSingleton<ICommandHandler, CommandHandler>();
+                    services.AddSingleton<IPlexNotifierrApi, PlexNotifierrApi>();
                     services.AddOptions<RabbitMqConfig>().Bind(hostContext.Configuration.GetSection("RabbitMQ"));
+                    services.AddOptions<PlexNotifierrApiConfig>().Bind(hostContext.Configuration.GetSection("PlexNotifierrApi"));
                 })
                .Build();
 
