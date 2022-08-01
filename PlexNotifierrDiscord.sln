@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlexNotifierrDiscord", "PlexNotifierrDiscord\PlexNotifierrDiscord.csproj", "{29F17751-A85C-4740-B445-DA98B052A199}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src\PlexNotifierrDiscord", "src\PlexNotifierrDiscord\PlexNotifierrDiscord.csproj", "{29F17751-A85C-4740-B445-DA98B052A199}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
