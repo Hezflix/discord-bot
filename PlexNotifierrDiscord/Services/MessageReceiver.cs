@@ -22,16 +22,20 @@ namespace PlexNotifierrDiscord.Services
         private readonly int _port;
         private readonly string _userName;
         private readonly string _virtualHost;
+        private readonly string _plexServerIdentifier;
+        private readonly string _plexServerHostName;
         private IModel? _channel;
         private IConnection? _connection;
 
-        public MessageReceiver(IOptions<RabbitMqConfig> options, ILogger<MessageReceiver> logger, DiscordShardedClient client)
+        public MessageReceiver(IOptions<RabbitMqConfig> options, IOptions<PlexNotifierrApiConfig> plexConfig, ILogger<MessageReceiver> logger, DiscordShardedClient client)
         {
             _hostName = options.Value.HostName;
             _userName = options.Value.UserName;
             _password = options.Value.Password;
             _port = options.Value.Port;
             _virtualHost = options.Value.VirtualHost;
+            _plexServerIdentifier = plexConfig.Value.PlexServerIdentifier;
+            _plexServerHostName = plexConfig.Value.PlexServerHostName;
             _logger = logger;
             _client = client;
             InitializeRabbitMqListener();
@@ -88,7 +92,15 @@ namespace PlexNotifierrDiscord.Services
             try
             {
                 var user = await _client.Rest.GetUserAsync(Convert.ToUInt64(plexNotification.DiscordId));
-                await user.SendMessageAsync($"📺 {plexNotification.Title} - Saison {plexNotification.Season} : Episode {plexNotification.Episode} - {plexNotification.EpisodeTitle} 👈 vient d'être ajouté à Plex !");
+                var embedBuilder = new EmbedBuilder()
+                                  .WithTitle($"{plexNotification.Title} - {plexNotification.EpisodeTitle} (S{plexNotification.Season} · E{plexNotification.Episode})")
+                                  .WithDescription($"{plexNotification.Summary}")
+                                  .WithImageUrl(plexNotification.ThumbUrl)
+                                  .WithColor(Color.DarkPurple)
+                                  .WithCurrentTimestamp();
+                if (!string.IsNullOrWhiteSpace(_plexServerIdentifier) && !string.IsNullOrWhiteSpace(_plexServerHostName)) embedBuilder.AddField("View on Plex", $"[Lien vers l'épisode]({_plexServerHostName}/web/index.html#!/server/{_plexServerIdentifier}/details?key={plexNotification.GrandParentRatingKey})");
+                var embed = embedBuilder.Build();
+                await user.SendMessageAsync($"📺 {plexNotification.Title} - Saison {plexNotification.Season} : Episode {plexNotification.Episode} - {plexNotification.EpisodeTitle} 👈 vient d'être ajouté à Plex !", embed: embed);
             }
             catch (Exception e)
             {
