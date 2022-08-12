@@ -29,12 +29,12 @@ namespace PlexNotifierrDiscord.Services
             // Subscribe a handler to see if a message invokes a command.
             _client.MessageReceived += HandleCommandAsync;
             
-            _client.ShardReady += Ready;
+            _client.ShardConnected += Connected;
             //await _client.SetActivityAsync(IActivity);
             foreach (var module in _commands.Modules) Log.Information("Module \'{ModuleName}\' initialized", module.Name);
         }
 
-        private async Task Ready(DiscordSocketClient discordSocketClient)
+        private async Task Connected(DiscordSocketClient discordSocketClient)
         {
             await discordSocketClient.SetGameAsync("!help", type: ActivityType.Listening);
         }
