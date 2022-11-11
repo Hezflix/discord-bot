@@ -101,6 +101,7 @@ namespace PlexNotifierrDiscord.Services
                 if (!string.IsNullOrWhiteSpace(_plexServerIdentifier) && !string.IsNullOrWhiteSpace(_plexServerHostName)) embedBuilder.AddField("View on Plex", $"[Lien vers l'épisode]({_plexServerHostName}/web/index.html#!/server/{_plexServerIdentifier}/details?key={plexNotification.GrandParentRatingKey})");
                 var embed = embedBuilder.Build();
                 await user.SendMessageAsync($"📺 {plexNotification.Title} - Saison {plexNotification.Season} : Episode {plexNotification.Episode} - {plexNotification.EpisodeTitle} 👈 vient d'être ajouté à Plex !", embed: embed);
+                _logger.LogInformation($"Notify new episode of {plexNotification.Title} to {user.Username}");
             }
             catch (Exception e)
             {
