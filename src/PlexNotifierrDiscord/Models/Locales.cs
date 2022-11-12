@@ -10,6 +10,8 @@ namespace PlexNotifierrDiscord.Models
 
         public string NotificationTitle { get; set; } = "";
 
+        public string NotificationCta { get; set; }
+
         public string SubscribeNoPlex { get; set; } = "";
 
         public string SubscribeSuccess { get; set; } = "";

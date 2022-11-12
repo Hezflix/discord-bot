@@ -104,7 +104,7 @@ namespace PlexNotifierrDiscord.Services
                                   .WithImageUrl(plexNotification.ThumbUrl)
                                   .WithColor(Color.DarkPurple)
                                   .WithCurrentTimestamp();
-                if (!string.IsNullOrWhiteSpace(_plexServerIdentifier) && !string.IsNullOrWhiteSpace(_plexServerHostName)) embedBuilder.AddField("View on Plex", $"[Lien vers l'épisode]({_plexServerHostName}/web/index.html#!/server/{_plexServerIdentifier}/details?key={plexNotification.GrandParentRatingKey})");
+                if (!string.IsNullOrWhiteSpace(_plexServerIdentifier) && !string.IsNullOrWhiteSpace(_plexServerHostName)) embedBuilder.AddField("View on Plex", $"[{locales.NotificationCta}]({_plexServerHostName}/web/index.html#!/server/{_plexServerIdentifier}/details?key={plexNotification.GrandParentRatingKey})");
                 var embed = embedBuilder.Build();
                 await user.SendMessageAsync(title, embed: embed);
                 _logger.LogInformation($"Notify new episode of {plexNotification.Title} to {user.Username}");
