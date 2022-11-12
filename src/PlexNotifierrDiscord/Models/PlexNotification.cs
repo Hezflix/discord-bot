@@ -9,6 +9,6 @@ namespace PlexNotifierrDiscord.Models
         public int Season { get; set; }
         public string EpisodeTitle { get; set; } = "";
         public int Episode { get; set; }
-        public string GrandParentRatingKey { get; set; }
+        public string GrandParentRatingKey { get; set; } = "";
     }
 }

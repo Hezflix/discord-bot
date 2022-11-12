@@ -1,15 +1,18 @@
 using Discord;
 using Discord.Commands;
 using Microsoft.Extensions.Logging;
+using PlexNotifierrDiscord.Services;
 
 namespace PlexNotifierrDiscord.Modules
 {
     public class HelperCommands : ModuleBase<ShardedCommandContext>
     {
+        private readonly ILocalHandler _localHandler;
         private readonly ILogger<HelperCommands> _logger;
 
-        public HelperCommands(ILogger<HelperCommands> logger)
+        public HelperCommands(ILocalHandler localHandler, ILogger<HelperCommands> logger)
         {
+            _localHandler = localHandler;
             _logger = logger;
         }
         
@@ -17,12 +20,13 @@ namespace PlexNotifierrDiscord.Modules
         public async Task? Help()
         {
             _logger.LogInformation($"Help requested by {Context.User.Username}");
+            var locales = _localHandler.GetLocales();
             var embedBuilder = new EmbedBuilder()
                               .WithAuthor(Context.Client.CurrentUser.Username, Context.Client.CurrentUser.GetAvatarUrl())
-                              .WithTitle("Hezping envoie une notification quand un nouvel épisode d'une série que tu regardes sort sur Hezflix")
+                              .WithTitle(locales.HelpTitle)
                               .AddField("\u200b", "\u200b")
-                              .AddField("!subscribe {username Plex}", "Permet de s'inscrire pour recevoir les notifications dès qu'un épisode sort")
-                              .AddField("!unsubscribe", "Permet de te désinscrire et de ne plus recevoir les notifications")
+                              .AddField("!subscribe {username Plex}", locales.SubscribeHelp)
+                              .AddField("!unsubscribe", locales.UnsubscribeHelp)
                               .WithColor(Color.DarkPurple)
                               .WithCurrentTimestamp();
 
