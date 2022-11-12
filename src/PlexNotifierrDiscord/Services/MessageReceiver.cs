@@ -14,9 +14,9 @@ namespace PlexNotifierrDiscord.Services
 {
     public class MessageReceiver : BackgroundService
     {
+        private readonly ILocalHandler _localHandler;
         private readonly DiscordShardedClient _client;
         private readonly string _hostName;
-
         private readonly ILogger<MessageReceiver> _logger;
         private readonly string _password;
         private readonly int _port;
@@ -27,8 +27,9 @@ namespace PlexNotifierrDiscord.Services
         private IModel? _channel;
         private IConnection? _connection;
 
-        public MessageReceiver(IOptions<RabbitMqConfig> options, IOptions<PlexNotifierrApiConfig> plexConfig, ILogger<MessageReceiver> logger, DiscordShardedClient client)
+        public MessageReceiver(IOptions<RabbitMqConfig> options, IOptions<PlexNotifierrApiConfig> plexConfig, ILogger<MessageReceiver> logger, DiscordShardedClient client, ILocalHandler localHandler)
         {
+            _localHandler = localHandler;
             _hostName = options.Value.HostName;
             _userName = options.Value.UserName;
             _password = options.Value.Password;
@@ -92,6 +93,11 @@ namespace PlexNotifierrDiscord.Services
             try
             {
                 var user = await _client.Rest.GetUserAsync(Convert.ToUInt64(plexNotification.DiscordId));
+                var locales = _localHandler.GetLocales();
+                var title = locales.NotificationTitle.Replace("{Title}", plexNotification.Title)
+                                   .Replace("{Season}", plexNotification.Season.ToString())
+                                   .Replace("{Episode}", plexNotification.Episode.ToString())
+                                   .Replace("{EpisodeTitle}", plexNotification.EpisodeTitle);
                 var embedBuilder = new EmbedBuilder()
                                   .WithTitle($"{plexNotification.Title} - {plexNotification.EpisodeTitle} (S{plexNotification.Season} · E{plexNotification.Episode})")
                                   .WithDescription($"{plexNotification.Summary}")
@@ -100,7 +106,7 @@ namespace PlexNotifierrDiscord.Services
                                   .WithCurrentTimestamp();
                 if (!string.IsNullOrWhiteSpace(_plexServerIdentifier) && !string.IsNullOrWhiteSpace(_plexServerHostName)) embedBuilder.AddField("View on Plex", $"[Lien vers l'épisode]({_plexServerHostName}/web/index.html#!/server/{_plexServerIdentifier}/details?key={plexNotification.GrandParentRatingKey})");
                 var embed = embedBuilder.Build();
-                await user.SendMessageAsync($"📺 {plexNotification.Title} - Saison {plexNotification.Season} : Episode {plexNotification.Episode} - {plexNotification.EpisodeTitle} 👈 vient d'être ajouté à Plex !", embed: embed);
+                await user.SendMessageAsync(title, embed: embed);
                 _logger.LogInformation($"Notify new episode of {plexNotification.Title} to {user.Username}");
             }
             catch (Exception e)
