@@ -7,8 +7,6 @@ namespace PlexNotifierrDiscord.Services
     {
         private Locales? Locales { get; set; }
 
-        public LocalHandler() { }
-
         private void InitializeAsync()
         {
             var fileName = "locales.json";

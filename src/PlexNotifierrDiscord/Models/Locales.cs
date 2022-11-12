@@ -9,5 +9,15 @@ namespace PlexNotifierrDiscord.Models
         public string UnsubscribeHelp { get; set; } = "";
 
         public string NotificationTitle { get; set; } = "";
+
+        public string SubscribeNoPlex { get; set; } = "";
+
+        public string SubscribeSuccess { get; set; } = "";
+
+        public string SubscribeError { get; set; } = "";
+        
+        public string UnsubscribeSuccess { get; set; } = "";
+
+        public string UnsubscribeError { get; set; } = "";
     }
 }

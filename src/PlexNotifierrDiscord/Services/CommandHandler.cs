@@ -55,7 +55,7 @@ namespace PlexNotifierrDiscord.Services
             var markPos = 0;
             if (msg.HasCharPrefix('!', ref markPos) || msg.HasCharPrefix('?', ref markPos))
             {
-                var result = await _commands.ExecuteAsync(context, markPos, _services);
+                await _commands.ExecuteAsync(context, markPos, _services);
             }
         }
     }
